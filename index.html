@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maze Escape Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #111;
+      color: white;
+    }
+
+    canvas {
+      border: 2px solid white;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="mazeCanvas" width="500" height="500"></canvas>
+<div id="congrats" style="display: none;">Congratulations! You've escaped!</div>
+
+<script>
+  const canvas = document.getElementById("mazeCanvas");
+  const ctx = canvas.getContext("2d");
+  const congratsMessage = document.getElementById("congrats");
+
+  const mazeSize = 10; // Adjust the maze size
+  const cellSize = canvas.width / mazeSize;
+
+  let player = { x: 0, y: 0 };
+
+  const maze = generateMaze();
+
+  function generateMaze() {
+    const maze = [];
+    for (let i = 0; i < mazeSize; i++) {
+      maze[i] = [];
+      for (let j = 0; j < mazeSize; j++) {
+        maze[i][j] = Math.random() > 0.7 ? 1 : 0; // Adjust the wall density
+      }
+    }
+    maze[0][0] = 0; // Start position
+    maze[mazeSize - 1][mazeSize - 1] = 0; // Escape position
+    return maze;
+  }
+
+  function drawMaze() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < mazeSize; i++) {
+      for (let j = 0; j < mazeSize; j++) {
+        if (maze[i][j] === 1) {
+          ctx.fillStyle = "#333"; // Wall color
+          ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    ctx.fillStyle = "#0f0"; // Player color
+    ctx.fillRect(player.x * cellSize, player.y * cellSize, cellSize, cellSize);
+  }
+
+  function checkCollision() {
+    return maze[player.y][player.x] === 1;
+  }
+
+  function checkEscape() {
+    return player.x === mazeSize - 5 && player.y === mazeSize - 1;
+  }
+
+  function movePlayer(e) {
+    const newX = player.x + (e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0);
+    const newY = player.y + (e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0);
+
+    if (newX >= 0 && newX < mazeSize && newY >= 0 && newY < mazeSize && maze[newY][newX] !== 1) {
+      player.x = newX;
+      player.y = newY;
+
+      if (checkEscape()) {
+        congratsMessage.style.display = "block";
+        document.removeEventListener("keydown", movePlayer);
+      }
+    }
+
+    drawMaze();
+  }
+
+  document.addEventListener("keydown", movePlayer);
+  drawMaze();
+</script>
+
+</body>
+</html>
+
